@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Resume-JD Matcher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>AI Resume Matcher</h1>
+    <p>Paste your resume and a job description to see your match score.</p>
+  </header>
+
+  <main class="container">
+    <div class="input-box">
+      <label for="resumeInput">Your Resume</label>
+      <textarea id="resumeInput" placeholder="Paste your resume text here..."></textarea>
+    </div>
+
+    <div class="input-box">
+      <label for="jdInput">Job Description</label>
+      <textarea id="jdInput" placeholder="Paste the job description here..."></textarea>
+    </div>
+  </main>
+
+  <div class="action">
+    <button id="checkBtn">Check Match Score</button>
+  </div>
+
+  <section id="results" class="results hidden">
+    <h2>Results</h2>
+    <p id="scoreText">Score: --%</p>
+    <div class="score-bar">
+      <div id="scoreFill" class="score-fill"></div>
+    </div>
+    <h3>Missing Keywords</h3>
+    <ul id="missingKeywords"></ul>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
