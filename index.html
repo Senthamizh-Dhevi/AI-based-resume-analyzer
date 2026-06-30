@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Resume Matcher | Smart ATS Score Checker</title>
+  <title>AI Resume Analyzer | Smart ATS Score Checker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -53,27 +53,14 @@
     <h2>Match Results</h2>
 
     <div class="score-display">
-      <div class="score-block">
-        <div class="score-circle-wrap">
-          <svg viewBox="0 0 120 120" class="score-circle">
-            <circle cx="60" cy="60" r="52" class="score-bg"/>
-            <circle cx="60" cy="60" r="52" class="score-fg" id="scoreCircleFg"/>
-          </svg>
-          <span id="scoreNumber" class="score-number">0%</span>
-        </div>
-        <div class="score-label" id="scoreLabel">Keyword Match</div>
+      <div class="score-circle-wrap">
+        <svg viewBox="0 0 120 120" class="score-circle">
+          <circle cx="60" cy="60" r="52" class="score-bg"/>
+          <circle cx="60" cy="60" r="52" class="score-fg" id="scoreCircleFg"/>
+        </svg>
+        <span id="scoreNumber" class="score-number">0%</span>
       </div>
-
-      <div class="score-block">
-        <div class="score-circle-wrap">
-          <svg viewBox="0 0 120 120" class="score-circle">
-            <circle cx="60" cy="60" r="52" class="score-bg"/>
-            <circle cx="60" cy="60" r="52" class="score-fg ai-fg" id="aiScoreCircleFg"/>
-          </svg>
-          <span id="aiScoreNumber" class="score-number">0%</span>
-        </div>
-        <div class="score-label">🤖 AI Match (TF-IDF)</div>
-      </div>
+      <div class="score-label" id="scoreLabel">Calculating...</div>
     </div>
 
     <h3>🔍 Missing Keywords</h3>
@@ -85,7 +72,7 @@
   </section>
 
   <footer>
-    <p>AI based Resume Analyzer — Built with Java, Spring Boot &amp; TF-IDF</p>
+    <p>AI Resume Matcher — Built with Java, Spring Boot &amp; TF-IDF</p>
     <p class="footer-sub">Helping to tailor resumes that get noticed</p>
   </footer>
 

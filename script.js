@@ -1,4 +1,4 @@
-// ---- Final Version: TF-IDF AI scoring + PDF/DOCX upload ----
+// ---- Version 3 (Polished): calls Java backend, with better UX ----
 
 const resumeInput = document.getElementById('resumeInput');
 const jdInput = document.getElementById('jdInput');
@@ -11,8 +11,9 @@ const clearBtn = document.getElementById('clearBtn');
 const errorMsg = document.getElementById('errorMsg');
 const resultsSection = document.getElementById('results');
 
-const SCORE_CIRCUMFERENCE = 327;
+const SCORE_CIRCUMFERENCE = 327; // matches the SVG circle's stroke-dasharray
 
+// Live word count as user types
 function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 }
@@ -48,7 +49,7 @@ resumeFileInput.addEventListener('change', async () => {
       throw new Error('Failed to extract text');
     }
 
-    const data = await response.json();
+    const data = await response.json(); // { text: "..." }
     resumeInput.value = data.text;
     resumeCount.textContent = `${countWords(resumeInput.value)} words`;
     uploadFileName.textContent = `✓ Loaded ${file.name}`;
@@ -59,6 +60,7 @@ resumeFileInput.addEventListener('change', async () => {
   }
 });
 
+// Clear button resets everything
 clearBtn.addEventListener('click', () => {
   resumeInput.value = '';
   jdInput.value = '';
@@ -110,15 +112,18 @@ checkBtn.addEventListener('click', async () => {
       throw new Error('Server responded with an error');
     }
 
-    const data = await response.json();
+    const data = await response.json(); // { score: ..., missingKeywords: [...] }
 
+    // Reveal results
     resultsSection.classList.remove('hidden');
 
+    // Animate score circle
     const offset = SCORE_CIRCUMFERENCE - (SCORE_CIRCUMFERENCE * data.score) / 100;
     document.getElementById('scoreCircleFg').style.strokeDashoffset = offset;
     document.getElementById('scoreNumber').textContent = `${data.score}%`;
     document.getElementById('scoreLabel').textContent = getScoreLabel(data.score);
 
+    // Show missing keywords
     const list = document.getElementById('missingKeywords');
     list.innerHTML = '';
 
@@ -132,6 +137,7 @@ checkBtn.addEventListener('click', async () => {
       });
     }
 
+    // Show personalized suggestions
     const suggestionsList = document.getElementById('suggestionsList');
     suggestionsList.innerHTML = '';
     (data.suggestions || []).forEach(suggestion => {
