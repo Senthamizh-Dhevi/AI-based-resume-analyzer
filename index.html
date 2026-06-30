@@ -20,7 +20,14 @@
         <span>📄 Your Resume</span>
         <span id="resumeCount" class="char-count">0 words</span>
       </label>
-      <textarea id="resumeInput" placeholder="Paste your resume text here..."></textarea>
+      <div class="upload-row">
+        <label for="resumeFile" class="upload-btn">
+          📎 Upload PDF/DOCX
+          <input type="file" id="resumeFile" accept=".pdf,.docx" hidden>
+        </label>
+        <span id="uploadFileName" class="file-name"></span>
+      </div>
+      <textarea id="resumeInput" placeholder="Paste your resume text here, or upload a file above..."></textarea>
     </div>
 
     <div class="input-box">
@@ -46,14 +53,27 @@
     <h2>Match Results</h2>
 
     <div class="score-display">
-      <div class="score-circle-wrap">
-        <svg viewBox="0 0 120 120" class="score-circle">
-          <circle cx="60" cy="60" r="52" class="score-bg"/>
-          <circle cx="60" cy="60" r="52" class="score-fg" id="scoreCircleFg"/>
-        </svg>
-        <span id="scoreNumber" class="score-number">0%</span>
+      <div class="score-block">
+        <div class="score-circle-wrap">
+          <svg viewBox="0 0 120 120" class="score-circle">
+            <circle cx="60" cy="60" r="52" class="score-bg"/>
+            <circle cx="60" cy="60" r="52" class="score-fg" id="scoreCircleFg"/>
+          </svg>
+          <span id="scoreNumber" class="score-number">0%</span>
+        </div>
+        <div class="score-label" id="scoreLabel">Keyword Match</div>
       </div>
-      <div class="score-label" id="scoreLabel">Calculating...</div>
+
+      <div class="score-block">
+        <div class="score-circle-wrap">
+          <svg viewBox="0 0 120 120" class="score-circle">
+            <circle cx="60" cy="60" r="52" class="score-bg"/>
+            <circle cx="60" cy="60" r="52" class="score-fg ai-fg" id="aiScoreCircleFg"/>
+          </svg>
+          <span id="aiScoreNumber" class="score-number">0%</span>
+        </div>
+        <div class="score-label">🤖 AI Match (TF-IDF)</div>
+      </div>
     </div>
 
     <h3>🔍 Missing Keywords</h3>
@@ -65,7 +85,8 @@
   </section>
 
   <footer>
-    <p>Built for the MVIT Best Resume Competition — 2028 Batch</p>
+    <p>AI based Resume Analyzer — Built with Java, Spring Boot &amp; TF-IDF</p>
+    <p class="footer-sub">Helping to tailor resumes that get noticed</p>
   </footer>
 
   <script src="script.js"></script>

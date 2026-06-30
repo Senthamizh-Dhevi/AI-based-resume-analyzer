@@ -1,56 +1,57 @@
 # AI Resume Matcher
 
-An AI-powered web application that analyzes how well a resume matches a job description, similar to how Applicant Tracking Systems (ATS) screen resumes. It goes a step further than basic keyword matching by giving personalized suggestions on how to improve the resume for a specific job. Built as a full-stack project for the MVIT Best Resume Competition (2028 Batch).
+An AI-powered web application that analyzes how well a resume matches a job description, similar to how Applicant Tracking Systems (ATS) screen resumes. Built as a full-stack project for the MVIT Best Resume Competition (2028 Batch).
 
 ## What it does
 
-Paste in your resume and a job description, and the app:
-- Calculates a match score based on keyword overlap
-- Highlights missing keywords you might want to add
-- Generates personalized suggestions for improving your resume, categorized by skill type (languages, frameworks, tools, soft skills)
-- Gives instant visual feedback with an animated circular score indicator
+- Upload your resume as a **PDF or DOCX file** (or paste text directly)
+- Paste in a job description
+- Get an instant match score powered by **TF-IDF and Cosine Similarity**, a real Information Retrieval technique
+- See exactly which keywords are missing from your resume
+- Receive **personalized, categorized suggestions** on what to improve
 
 ## Tech Stack
 
-- **Frontend:** HTML, CSS, JavaScript (Fetch API)
+- **Frontend:** HTML, CSS, JavaScript (Fetch API, FormData for file uploads)
 - **Backend:** Java, Spring Boot (REST API)
+- **File Parsing:** Apache PDFBox (PDF), Apache POI (DOCX)
 - **Build Tool:** Maven
 
-## How it works
+## The AI/NLP Engine
 
-1. The frontend collects resume text and job description text from the user
-2. This data is sent to a Java backend via a POST request to `/api/match`
-3. The backend extracts meaningful keywords from both texts (removing common stopwords) and compares them to calculate a match percentage
-4. A separate suggestion engine analyzes the missing keywords, categorizes them (programming languages, frameworks, tools/cloud platforms, soft skills), and generates targeted, human-readable advice based on the score and the gaps found
-5. The score, missing keywords, and suggestions are sent back as JSON and displayed with an animated circular progress indicator and a suggestions panel
+The core of this project is a **TF-IDF (Term Frequency-Inverse Document Frequency) + Cosine Similarity** scoring system — the same family of mathematical technique used by early search engines and many real-world resume screening tools:
+
+1. **Tokenization** — both texts are broken into individual words, with common filler words removed
+2. **Synonym Normalization** — equivalent terms are unified (e.g., "JS" → "JavaScript", "K8s" → "Kubernetes") so valid skills aren't penalized for naming differences
+3. **TF (Term Frequency)** — measures how often each word appears in a document, normalized by length
+4. **IDF (Inverse Document Frequency)** — gives more weight to distinctive, specific words and less weight to generic ones
+5. **Vectorization** — both documents are converted into TF-IDF weighted vectors
+6. **Cosine Similarity** — the angle between the two vectors is calculated to produce a 0-100% match score
+
+This is a genuine NLP/Information Retrieval technique, not a simple keyword counter.
 
 ## Project Structure
 
 ```
-├── index.html          # Main UI
-├── style.css            # Styling
-├── script.js             # Frontend logic (calls backend API)
+├── index.html
+├── style.css
+├── script.js
 └── backend/
-    ├── pom.xml            # Maven dependencies
-    └── src/main/java/com/resumematcher/app/
-        ├── ResumeMatcherApplication.java   # Spring Boot entry point
-        ├── MatchController.java             # REST API endpoint
-        ├── MatchService.java                  # Core matching logic
-        ├── SuggestionService.java             # Generates personalized resume suggestions
-        ├── MatchRequest.java                  # Request data model
-        └── MatchResponse.java                 # Response data model (score, missing keywords, suggestions)
+    ├── pom.xml
+    └── src/main/
+        ├── resources/
+        │   └── application.properties
+        └── java/com/resumematcher/app/
+            ├── ResumeMatcherApplication.java   # Spring Boot entry point
+            ├── MatchController.java             # REST API endpoints
+            ├── MatchService.java                  # Orchestrates matching logic
+            ├── TfIdfService.java                   # Core AI scoring engine (TF-IDF + Cosine Similarity)
+            ├── SynonymService.java                 # Synonym normalization
+            ├── SuggestionService.java              # Generates personalized resume tips
+            ├── FileExtractionService.java          # Parses PDF/DOCX uploads
+            ├── MatchRequest.java                   # Request data model
+            └── MatchResponse.java                  # Response data model
 ```
-
-## Key Feature: Smart Suggestions
-
-Rather than just listing missing keywords, the app classifies them into categories and tailors its advice accordingly:
-
-- **Programming languages** → suggests adding them to the Skills section if genuinely known
-- **Frameworks** → suggests building or mentioning a relevant project
-- **Tools/cloud platforms** → suggests highlighting even basic exposure
-- **Soft skills** → suggests weaving them naturally into project/experience descriptions
-
-It also gives an overall verdict based on the match score (e.g., "Good match overall" vs. "This role may need a more tailored resume version").
 
 ## Running Locally
 
@@ -64,12 +65,18 @@ Server starts on `http://localhost:8080`
 ### Frontend
 Open `index.html` directly in your browser.
 
+## API Endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/match` | POST | Accepts resume + JD text, returns score, missing keywords, and suggestions |
+| `/api/extract-text` | POST | Accepts an uploaded PDF/DOCX file, returns extracted text |
+
 ## Future Improvements
 
-- Persist match history using MySQL
-- Improve keyword matching using actual NLP/semantic similarity instead of exact word matching
-- Add resume format/structure scoring (not just keywords)
-- Allow PDF/DOCX resume upload instead of copy-pasting text
+- Resume formatting/structure analysis (not just content)
+- Support for more file types (e.g., .doc, .txt)
+- Persisting match history with a database
 
 ## Author
 

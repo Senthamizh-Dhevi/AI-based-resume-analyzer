@@ -1,0 +1,9 @@
+com\resumematcher\app\SynonymService.class
+com\resumematcher\app\MatchResponse.class
+com\resumematcher\app\SuggestionService.class
+com\resumematcher\app\FileExtractionService.class
+com\resumematcher\app\MatchController.class
+com\resumematcher\app\TfIdfService.class
+com\resumematcher\app\MatchRequest.class
+com\resumematcher\app\MatchService.class
+com\resumematcher\app\ResumeMatcherApplication.class

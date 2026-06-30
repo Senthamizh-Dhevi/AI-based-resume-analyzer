@@ -4,16 +4,22 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// This is the "brain" of the app - the same logic from script.js,
-// just rewritten in Java. Keeping logic in a separate Service class
-// (instead of directly in the Controller) is a common Java best practice.
+// This is the main orchestrator: it uses TF-IDF + Cosine Similarity (our AI
+// scoring engine) to calculate the match score, and separately identifies
+// missing keywords to power the suggestions feature.
 @Service
 public class MatchService {
 
     private final SuggestionService suggestionService;
+    private final SynonymService synonymService;
+    private final TfIdfService tfIdfService;
 
-    public MatchService(SuggestionService suggestionService) {
+    public MatchService(SuggestionService suggestionService,
+                         SynonymService synonymService,
+                         TfIdfService tfIdfService) {
         this.suggestionService = suggestionService;
+        this.synonymService = synonymService;
+        this.tfIdfService = tfIdfService;
     }
 
     private static final Set<String> STOPWORDS = new HashSet<>(Arrays.asList(
@@ -23,7 +29,8 @@ public class MatchService {
         "our","their","my","his","her","its"
     ));
 
-    // Cleans text and extracts unique keywords
+    // Used only for finding MISSING keywords (for the suggestions feature) -
+    // the actual score now comes from TF-IDF + Cosine Similarity below.
     private Set<String> extractKeywords(String text) {
         String[] words = text.toLowerCase()
                               .replaceAll("[^a-z0-9\\s]", " ")
@@ -31,10 +38,10 @@ public class MatchService {
 
         return Arrays.stream(words)
                      .filter(w -> w.length() > 2 && !STOPWORDS.contains(w))
+                     .map(synonymService::normalize)
                      .collect(Collectors.toSet());
     }
 
-    // Compares resume vs job description and returns score + missing keywords + suggestions
     public MatchResponse calculateMatch(String resumeText, String jdText) {
         Set<String> resumeWords = extractKeywords(resumeText);
         Set<String> jdWords = extractKeywords(jdText);
@@ -43,10 +50,9 @@ public class MatchService {
                                        .filter(word -> !resumeWords.contains(word))
                                        .collect(Collectors.toList());
 
-        int matchedCount = jdWords.size() - missing.size();
-        int score = jdWords.isEmpty() ? 0 : (matchedCount * 100) / jdWords.size();
+        // The actual AI-based score: TF-IDF vectorization + Cosine Similarity
+        int score = tfIdfService.calculateSimilarityScore(resumeText, jdText);
 
-        // Generate personalized suggestions based on score and missing keywords
         List<String> suggestions = suggestionService.generateSuggestions(score, missing);
 
         return new MatchResponse(score, missing, suggestions);
