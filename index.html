@@ -2,41 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Resume-JD Matcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Resume Matcher | Smart ATS Score Checker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header>
-    <h1>AI Resume Matcher</h1>
-    <p>Paste your resume and a job description to see your match score.</p>
+  <header class="hero">
+    <div class="badge">AI-Powered</div>
+    <h1>Resume Matcher</h1>
+    <p>Instantly check how well your resume matches a job description — and see exactly what's missing.</p>
   </header>
 
   <main class="container">
     <div class="input-box">
-      <label for="resumeInput">Your Resume</label>
+      <label for="resumeInput">
+        <span>📄 Your Resume</span>
+        <span id="resumeCount" class="char-count">0 words</span>
+      </label>
       <textarea id="resumeInput" placeholder="Paste your resume text here..."></textarea>
     </div>
 
     <div class="input-box">
-      <label for="jdInput">Job Description</label>
+      <label for="jdInput">
+        <span>💼 Job Description</span>
+        <span id="jdCount" class="char-count">0 words</span>
+      </label>
       <textarea id="jdInput" placeholder="Paste the job description here..."></textarea>
     </div>
   </main>
 
   <div class="action">
-    <button id="checkBtn">Check Match Score</button>
+    <button id="checkBtn">
+      <span id="btnText">Check Match Score</span>
+      <span id="btnSpinner" class="spinner hidden"></span>
+    </button>
+    <button id="clearBtn" class="secondary-btn">Clear</button>
   </div>
 
+  <p id="errorMsg" class="error-msg hidden"></p>
+
   <section id="results" class="results hidden">
-    <h2>Results</h2>
-    <p id="scoreText">Score: --%</p>
-    <div class="score-bar">
-      <div id="scoreFill" class="score-fill"></div>
+    <h2>Match Results</h2>
+
+    <div class="score-display">
+      <div class="score-circle-wrap">
+        <svg viewBox="0 0 120 120" class="score-circle">
+          <circle cx="60" cy="60" r="52" class="score-bg"/>
+          <circle cx="60" cy="60" r="52" class="score-fg" id="scoreCircleFg"/>
+        </svg>
+        <span id="scoreNumber" class="score-number">0%</span>
+      </div>
+      <div class="score-label" id="scoreLabel">Calculating...</div>
     </div>
-    <h3>Missing Keywords</h3>
+
+    <h3>🔍 Missing Keywords</h3>
+    <p class="hint">Try adding these to your resume if relevant to your experience:</p>
     <ul id="missingKeywords"></ul>
   </section>
+
+  <footer>
+    <p>Built for the MVIT Best Resume Competition — 2028 Batch</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>

@@ -1,71 +1,114 @@
-// ---- Version 2: Matching Algorithm ----
+// ---- Version 3 (Polished): calls Java backend, with better UX ----
 
-// Common words we ignore because they don't carry real meaning
-const STOPWORDS = new Set([
-  'a','an','the','and','or','but','is','are','was','were','be','been',
-  'in','on','at','to','for','of','with','by','as','this','that','it',
-  'from','will','can','has','have','had','i','you','we','they','your',
-  'our','their','my','his','her','its'
-]);
+const resumeInput = document.getElementById('resumeInput');
+const jdInput = document.getElementById('jdInput');
+const resumeCount = document.getElementById('resumeCount');
+const jdCount = document.getElementById('jdCount');
+const checkBtn = document.getElementById('checkBtn');
+const btnText = document.getElementById('btnText');
+const btnSpinner = document.getElementById('btnSpinner');
+const clearBtn = document.getElementById('clearBtn');
+const errorMsg = document.getElementById('errorMsg');
+const resultsSection = document.getElementById('results');
 
-// Turns a block of text into a clean Set of meaningful words
-function extractKeywords(text) {
-  return new Set(
-    text
-      .toLowerCase()                     // normalize case
-      .replace(/[^a-z0-9\s]/g, ' ')       // remove punctuation
-      .split(/\s+/)                      // split into words
-      .filter(word => word.length > 2 && !STOPWORDS.has(word)) // remove junk
-  );
+const SCORE_CIRCUMFERENCE = 327; // matches the SVG circle's stroke-dasharray
+
+// Live word count as user types
+function countWords(text) {
+  return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 }
 
-// Compares resume keywords vs job description keywords
-function calculateMatch(resumeText, jdText) {
-  const resumeWords = extractKeywords(resumeText);
-  const jdWords = extractKeywords(jdText);
+resumeInput.addEventListener('input', () => {
+  resumeCount.textContent = `${countWords(resumeInput.value)} words`;
+});
 
-  const jdWordsArray = Array.from(jdWords);
-  const matchedWords = jdWordsArray.filter(word => resumeWords.has(word));
-  const missingWords = jdWordsArray.filter(word => !resumeWords.has(word));
+jdInput.addEventListener('input', () => {
+  jdCount.textContent = `${countWords(jdInput.value)} words`;
+});
 
-  const score = jdWordsArray.length === 0
-    ? 0
-    : Math.round((matchedWords.length / jdWordsArray.length) * 100);
+// Clear button resets everything
+clearBtn.addEventListener('click', () => {
+  resumeInput.value = '';
+  jdInput.value = '';
+  resumeCount.textContent = '0 words';
+  jdCount.textContent = '0 words';
+  resultsSection.classList.add('hidden');
+  errorMsg.classList.add('hidden');
+});
 
-  return { score, missingWords };
+function setLoading(isLoading) {
+  checkBtn.disabled = isLoading;
+  btnText.textContent = isLoading ? 'Checking...' : 'Check Match Score';
+  btnSpinner.classList.toggle('hidden', !isLoading);
 }
 
-// ---- Hook everything up to the button ----
-document.getElementById('checkBtn').addEventListener('click', () => {
-  const resumeText = document.getElementById('resumeInput').value.trim();
-  const jdText = document.getElementById('jdInput').value.trim();
+function showError(message) {
+  errorMsg.textContent = message;
+  errorMsg.classList.remove('hidden');
+}
+
+function getScoreLabel(score) {
+  if (score >= 80) return 'Excellent Match!';
+  if (score >= 60) return 'Good Match';
+  if (score >= 40) return 'Needs Improvement';
+  return 'Low Match';
+}
+
+checkBtn.addEventListener('click', async () => {
+  const resumeText = resumeInput.value.trim();
+  const jdText = jdInput.value.trim();
+
+  errorMsg.classList.add('hidden');
 
   if (!resumeText || !jdText) {
-    alert('Please fill in both fields before checking.');
+    showError('Please fill in both fields before checking.');
     return;
   }
 
-  const { score, missingWords } = calculateMatch(resumeText, jdText);
+  setLoading(true);
 
-  // Show results section
-  const resultsSection = document.getElementById('results');
-  resultsSection.classList.remove('hidden');
-
-  // Update score text and bar
-  document.getElementById('scoreText').textContent = `Score: ${score}%`;
-  document.getElementById('scoreFill').style.width = `${score}%`;
-
-  // Show missing keywords
-  const list = document.getElementById('missingKeywords');
-  list.innerHTML = '';
-
-  if (missingWords.length === 0) {
-    list.innerHTML = '<li>Great! No major keywords missing.</li>';
-  } else {
-    missingWords.slice(0, 15).forEach(word => {
-      const li = document.createElement('li');
-      li.textContent = word;
-      list.appendChild(li);
+  try {
+    const response = await fetch('http://localhost:8080/api/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resumeText, jdText })
     });
+
+    if (!response.ok) {
+      throw new Error('Server responded with an error');
+    }
+
+    const data = await response.json(); // { score: ..., missingKeywords: [...] }
+
+    // Reveal results
+    resultsSection.classList.remove('hidden');
+
+    // Animate circular score
+    const offset = SCORE_CIRCUMFERENCE - (SCORE_CIRCUMFERENCE * data.score) / 100;
+    document.getElementById('scoreCircleFg').style.strokeDashoffset = offset;
+    document.getElementById('scoreNumber').textContent = `${data.score}%`;
+    document.getElementById('scoreLabel').textContent = getScoreLabel(data.score);
+
+    // Show missing keywords
+    const list = document.getElementById('missingKeywords');
+    list.innerHTML = '';
+
+    if (data.missingKeywords.length === 0) {
+      list.innerHTML = '<li>🎉 No major keywords missing!</li>';
+    } else {
+      data.missingKeywords.slice(0, 15).forEach(word => {
+        const li = document.createElement('li');
+        li.textContent = word;
+        list.appendChild(li);
+      });
+    }
+
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch (err) {
+    showError('Could not reach the server. Make sure the Java backend is running on port 8080.');
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
 });
