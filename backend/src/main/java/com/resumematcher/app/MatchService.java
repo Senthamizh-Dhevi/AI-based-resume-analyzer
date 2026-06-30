@@ -10,6 +10,12 @@ import java.util.stream.Collectors;
 @Service
 public class MatchService {
 
+    private final SuggestionService suggestionService;
+
+    public MatchService(SuggestionService suggestionService) {
+        this.suggestionService = suggestionService;
+    }
+
     private static final Set<String> STOPWORDS = new HashSet<>(Arrays.asList(
         "a","an","the","and","or","but","is","are","was","were","be","been",
         "in","on","at","to","for","of","with","by","as","this","that","it",
@@ -28,7 +34,7 @@ public class MatchService {
                      .collect(Collectors.toSet());
     }
 
-    // Compares resume vs job description and returns score + missing keywords
+    // Compares resume vs job description and returns score + missing keywords + suggestions
     public MatchResponse calculateMatch(String resumeText, String jdText) {
         Set<String> resumeWords = extractKeywords(resumeText);
         Set<String> jdWords = extractKeywords(jdText);
@@ -40,6 +46,9 @@ public class MatchService {
         int matchedCount = jdWords.size() - missing.size();
         int score = jdWords.isEmpty() ? 0 : (matchedCount * 100) / jdWords.size();
 
-        return new MatchResponse(score, missing);
+        // Generate personalized suggestions based on score and missing keywords
+        List<String> suggestions = suggestionService.generateSuggestions(score, missing);
+
+        return new MatchResponse(score, missing, suggestions);
     }
 }
